@@ -1,4 +1,5 @@
-# BlitzLink jars: ONE mod file for NeoForge + Fabric (build/libs/blitzlink-<version>+mc26.3.jar) and the Bukkit plugin,
+# BlitzLink jars: ONE mod file for NeoForge + Fabric (build/libs/blitzlink-<version>+mc26.3.jar, plus
+# BlitzLink-HAE-<version>+mc26.3.jar, the Human Art Edition with the hand-drawn icon) and the Bukkit plugin,
 # each carrying the blitzlink-tunnel sidecar for Windows x64/arm64 and Linux x64/arm64 (built by natives.yml on native runners).
 name: build
 
@@ -64,17 +65,23 @@ jobs:
       - name: Build
         run: ./gradlew build --stacktrace
 
-      - name: Every platform in the jar
+      # Both editions (default and BlitzLink-HAE) carry every platform; they differ only in assets/blitzlink/icon.png.
+      - name: Every platform in the jars
         run: |
-          jar=$(ls build/libs/blitzlink-*+mc*.jar)
-          unzip -p "$jar" natives/index.txt
-          test "$(unzip -p "$jar" natives/index.txt | wc -l)" -eq 4
-          unzip -l "$jar" | grep -E 'META-INF/neoforge.mods.toml|fabric.mod.json|META-INF/LICENSE'
+          test "$(ls build/libs/blitzlink-*+mc*.jar build/libs/BlitzLink-HAE-*+mc*.jar | wc -l)" -eq 2
+          for jar in build/libs/blitzlink-*+mc*.jar build/libs/BlitzLink-HAE-*+mc*.jar; do
+            echo "== $jar"
+            unzip -p "$jar" natives/index.txt
+            test "$(unzip -p "$jar" natives/index.txt | wc -l)" -eq 4
+            unzip -l "$jar" | grep -E 'META-INF/neoforge.mods.toml|fabric.mod.json|META-INF/LICENSE'
+          done
+          diff <(unzip -Z1 build/libs/blitzlink-*+mc26.3.jar | sort) <(unzip -Z1 build/libs/BlitzLink-HAE-*+mc26.3.jar | sort)
 
       - uses: actions/upload-artifact@v7
         with:
           name: blitzlink
           path: |
             build/libs/blitzlink-*.jar
+            build/libs/BlitzLink-HAE-*.jar
             bukkit/build/libs/blitzlink-bukkit-*.jar
           if-no-files-found: error

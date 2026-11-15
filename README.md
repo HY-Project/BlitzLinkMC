@@ -12,6 +12,18 @@
 Minecraft server matching for NeoForge, Fabric and Bukkit-family servers (Spigot, Paper, …). Join with a `MCJE-XXXX`
 code; the hyproj.com relay only passes the WebRTC offer/answer and the public list — game data flows peer-to-peer.
 
+## Screenshots
+
+<p align="center"><img src="docs/screenshots/05-playing-together.webp" alt="Two players in the same world, connected over BlitzLink" width="820"></p>
+<p align="center">
+  <img src="docs/screenshots/01-relay-list.png" alt="The BlitzLink multiplayer screen with the public server list" width="405">
+  <img src="docs/screenshots/02-server-card.png" alt="Server card: a Fabric server seen from a Fabric client, ready to join" width="405">
+</p>
+<p align="center">
+  <img src="docs/screenshots/03-loader-mismatch.png" alt="The same server seen from a NeoForge client: the whole card turns red" width="405">
+  <img src="docs/screenshots/04-pause-menu.webp" alt="The pause menu with the BlitzLink button where Open to LAN used to be" width="405">
+</p>
+
 | Path | What |
 |---|---|
 | `common/` | Loader-independent Java (compiled against vanilla): UI, sidecar control, mod comparison, mixins |
@@ -27,6 +39,8 @@ code; the hyproj.com relay only passes the WebRTC offer/answer and the public li
 cd native && cargo build --release          # Windows sidecar → native/target/release
 ./gradlew build                             # build/libs/blitzlink-<version>+mc26.3.jar (NeoForge+Fabric in one) + bukkit plugin
 ```
+
+`build` also makes `BlitzLink-HAE-<version>+mc26.3.jar` (task `haeJar`), **BlitzLink-HAE (Human Art Edition)**: the same jar with the hand-drawn icon from `branding/modrinth/`, for Modrinth, which does not allow AI-generated art. GitHub releases and CurseForge use the default jar.
 
 All four sidecars (Windows x64/arm64, Linux x64/arm64) are built on GitHub Actions (`.github/workflows/natives.yml`); `build.yml` downloads them into `natives/` and builds the jars.
 

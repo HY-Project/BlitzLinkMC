@@ -16,10 +16,14 @@
 - **바닐라 멀티플레이** — 원래 서버 목록 그대로.
 - **서버 열기** — 친구들과 함께할 월드를 연다.
 
+![공개 서버 목록이 보이는 BlitzLink 멀티플레이 화면](https://raw.githubusercontent.com/HY-Project/BlitzLinkMC/mc-26.3/docs/screenshots/01-relay-list.png)
+
 **월드를 바로 열기**
 - 싱글플레이 월드를 고르면 곧바로 참가 코드와 함께 열린다.
 - 게임 중에는 일시정지 메뉴의 **BlitzLink 서버 열기**(「LAN에 공개」 자리)로 연다.
 - **서버 ZIP 가져오기** — 서버 폴더나 월드를 압축한 ZIP을 창에 끌어다 놓으면 그 월드로 열어 준다.
+
+![「LAN에 공개」 자리에 BlitzLink 버튼이 있는 일시정지 메뉴](https://raw.githubusercontent.com/HY-Project/BlitzLinkMC/mc-26.3/docs/screenshots/04-pause-menu.webp)
 
 **전용 서버는 켜자마자 코드를 띄운다** — NeoForge·Fabric 서버 콘솔에 `BlitzLink: join code MCJE-…`가 찍힌다. 다시 켜도 코드는 그대로다.
 
@@ -32,6 +36,10 @@
 
 없는 모드가 있으면 설치할 때까지 **참가**가 꺼진다. 경고를 거쳐 **그래도 접속**할 수도 있다.
 
+![서버 카드 — Fabric 클라에서 본 Fabric 서버, 바로 참가 가능](https://raw.githubusercontent.com/HY-Project/BlitzLinkMC/mc-26.3/docs/screenshots/02-server-card.png)
+
+![같은 서버를 NeoForge 클라에서 보면 카드 전체가 빨갛다](https://raw.githubusercontent.com/HY-Project/BlitzLinkMC/mc-26.3/docs/screenshots/03-loader-mismatch.png)
+
 **대부분의 집 인터넷에서 그냥 된다**
 - UDP 홀펀칭으로 대부분의 집 인터넷은 설정 없이 바로 붙는다.
 - 원하면 UPnP로 공유기 포트도 대신 열어 준다.
@@ -43,6 +51,8 @@
 들어오고, 서버 카드에 플러그인 목록이 보인다. 주소로 들어오는 보통 접속도 그대로 받는다.
 
 **내 중계 서버 쓰기** — **BlitzLink → 설정**에서 직접 띄운 `blitzlink-relay` 주소를 넣으면 그 중계로 붙는다.
+
+![BlitzLink로 연결해 같은 월드에서 노는 두 플레이어](https://raw.githubusercontent.com/HY-Project/BlitzLinkMC/mc-26.3/docs/screenshots/05-playing-together.webp)
 
 ---
 

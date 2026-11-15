@@ -17,10 +17,14 @@ connection (WebRTC).
 - **Vanilla Multiplayer**: the usual server list, unchanged.
 - **Open Server**: host a world for friends.
 
+![The BlitzLink multiplayer screen with the public server list](https://raw.githubusercontent.com/HY-Project/BlitzLinkMC/mc-26.3/docs/screenshots/01-relay-list.png)
+
 **Open your world in one click**
 - Pick a singleplayer world and it opens straight away with a join code.
 - Or use **Open BlitzLink Server** in the pause menu, where "Open to LAN" used to be.
 - **Import Server ZIP**: drop a zipped server folder or world on the window to play it as a hosted world.
+
+![The pause menu with the BlitzLink button where "Open to LAN" used to be](https://raw.githubusercontent.com/HY-Project/BlitzLinkMC/mc-26.3/docs/screenshots/04-pause-menu.webp)
 
 **Dedicated servers print a code on start.** NeoForge and Fabric servers show `BlitzLink: join code MCJE-…` in the console. The code
 stays the same across restarts.
@@ -35,6 +39,10 @@ compares it with yours:
 
 Missing mods block **Join** until you install them; **Join anyway** is still there behind a warning.
 
+![Server card: a Fabric server seen from a Fabric client, ready to join](https://raw.githubusercontent.com/HY-Project/BlitzLinkMC/mc-26.3/docs/screenshots/02-server-card.png)
+
+![The same server seen from a NeoForge client: the whole card turns red](https://raw.githubusercontent.com/HY-Project/BlitzLinkMC/mc-26.3/docs/screenshots/03-loader-mismatch.png)
+
 **Works through most home networks**
 - UDP hole punching connects most home connections without any setup.
 - Optional UPnP opens the port on your router for you.
@@ -47,6 +55,8 @@ Missing mods block **Join** until you install them; **Join anyway** is still the
 by code, and the plugin list shows on the server card. The server still accepts normal connections by address.
 
 **Bring your own relay.** In **BlitzLink → Settings** you can point the mod at any self-hosted `blitzlink-relay`.
+
+![Two players in the same world, connected over BlitzLink](https://raw.githubusercontent.com/HY-Project/BlitzLinkMC/mc-26.3/docs/screenshots/05-playing-together.webp)
 
 ---
 
