@@ -1,0 +1,22 @@
+[package]
+name = "blitzlink-core"
+description = "BlitzLink — shared relay messages, STUN, identity and TURN codec"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = { version = "=1.0.154", features = ["preserve_order"] }
+# 서버 신원 — 서명·확인과 지문.
+ed25519-dalek = "=3.0.0"
+sha2 = "=0.11.1"
+getrandom = "=0.4.3"
+# TURN 장기 자격(RFC 8489 9.2) — MESSAGE-INTEGRITY(HMAC-SHA1)·열쇠(MD5)·시간제한 비밀번호(base64).
+hmac = "=0.13.0"
+sha1 = "=0.11.0"
+md-5 = "=0.11.0"
+base64 = "=0.22.1"

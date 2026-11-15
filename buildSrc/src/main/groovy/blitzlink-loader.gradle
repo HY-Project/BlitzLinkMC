@@ -1,0 +1,32 @@
+// Conventions for loader subprojects: compile common's sources and resources into the loader jar,
+// and ship the blitzlink-tunnel sidecar binaries (native/target/...) under natives/<os>-<arch>/.
+plugins {
+    id 'blitzlink-common'
+}
+
+configurations {
+    commonJava { canBeResolved = true }
+    commonResources { canBeResolved = true }
+}
+
+dependencies {
+    compileOnly project(':common')
+    commonJava project(path: ':common', configuration: 'commonJava')
+    commonResources project(path: ':common', configuration: 'commonResources')
+}
+
+tasks.named('compileJava', JavaCompile) {
+    dependsOn(configurations.commonJava)
+    source(configurations.commonJava)
+}
+
+processResources {
+    dependsOn(configurations.commonResources)
+    from(configurations.commonResources)
+    // Shared network constants (relay URL, STUN) — the Rust sidecar reads the same file.
+    from(rootProject.file('data')) { include 'net.json'; into 'blitzlink' }
+    // Sidecar binaries (natives/ from CI, or a local cargo build), for dev runs.
+    // NativeBundle.java reads natives/index.txt (`<platform> <file> <sha256>`) to find and verify them.
+    from(rootProject.layout.buildDirectory.dir('natives')) { into 'natives' }
+    dependsOn(rootProject.tasks.named('bundleNatives'))
+}

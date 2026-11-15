@@ -1,0 +1,5 @@
+# 로컬·CI가 같은 판으로 빌드한다.
+[toolchain]
+channel = "1.99.0"
+profile = "minimal"
+components = ["clippy"]

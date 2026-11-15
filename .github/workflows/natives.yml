@@ -1,0 +1,148 @@
+# BlitzLink sidecar (native/blitzlink-tunnel): tested and built on native GitHub-hosted runners for every platform the mod ships.
+# Public repository (HY-Project/BlitzLinkMC), so all runners are free.
+#
+# Output: one artifact `natives`. Downloaded into `natives/`, it is laid out exactly as the mod jar expects:
+#   natives/windows-x64/blitzlink-tunnel.exe
+#   natives/windows-arm64/blitzlink-tunnel.exe
+#   natives/linux-x64/blitzlink-tunnel
+#   natives/linux-arm64/blitzlink-tunnel
+#   natives/SHA256SUMS
+# The mod build (one universal jar) consumes it: call this workflow with `uses: ./.github/workflows/natives.yml`,
+# then download the `natives` artifact before running Gradle.
+name: natives
+
+on:
+  push:
+    branches: [main]
+    paths: ["native/**", "data/net.json", ".github/workflows/natives.yml"]
+  pull_request:
+    paths: ["native/**", "data/net.json", ".github/workflows/natives.yml"]
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_VERSION: '1.99.0'
+  # Windows arm64: aws-lc-sys (rustls for the wss relay link) needs clang there. Downloaded only if the image has no LLVM.
+  LLVM_WOA_VERSION: '23.1.4'
+  LLVM_WOA_SHA256: 'b484f54264400f0a75b63704b1068da8086f0b14625575f6efea08813109b068'
+
+jobs:
+  build:
+    name: ${{ matrix.platform }}-${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    strategy:
+      # Keep going when one platform fails, so a single run shows which OS broke.
+      fail-fast: false
+      matrix:
+        include:
+          - { platform: windows, arch: x64,   runner: windows-2025-vs2026,   target: x86_64-pc-windows-msvc }
+          - { platform: windows, arch: arm64, runner: windows-11-vs2026-arm, target: aarch64-pc-windows-msvc }
+          - { platform: linux,   arch: x64,   runner: ubuntu-26.04,          target: x86_64-unknown-linux-gnu }
+          - { platform: linux,   arch: arm64, runner: ubuntu-26.04-arm,      target: aarch64-unknown-linux-gnu }
+    env:
+      EXE: blitzlink-tunnel${{ matrix.platform == 'windows' && '.exe' || '' }}
+      DIR: ${{ matrix.platform }}-${{ matrix.arch }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: native
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: clang (Windows arm64)
+        if: matrix.platform == 'windows' && matrix.arch == 'arm64'
+        shell: pwsh
+        working-directory: .
+        run: |
+          $llvm = 'C:\Program Files\LLVM\bin'
+          if (-not (Test-Path "$llvm\clang.exe")) {
+            $msi = Join-Path $env:RUNNER_TEMP "LLVM-$env:LLVM_WOA_VERSION-woa64.msi"
+            Invoke-WebRequest -Uri "https://github.com/llvm/llvm-project/releases/download/llvmorg-$env:LLVM_WOA_VERSION/LLVM-$env:LLVM_WOA_VERSION-woa64.msi" -OutFile $msi
+            $actual = (Get-FileHash $msi -Algorithm SHA256).Hash.ToLower()
+            if ($actual -ne $env:LLVM_WOA_SHA256) {
+              Write-Output "::error::LLVM-$env:LLVM_WOA_VERSION-woa64.msi sha256 is $actual, expected $env:LLVM_WOA_SHA256"
+              exit 1
+            }
+            $p = Start-Process msiexec.exe -ArgumentList '/i', "`"$msi`"", '/qn', '/norestart' -Wait -PassThru
+            if ($p.ExitCode -ne 0) { Write-Output "::error::LLVM install exited with $($p.ExitCode)"; exit 1 }
+            Remove-Item $msi
+          }
+          if (-not (Test-Path "$llvm\clang.exe")) { Write-Output "::error::$llvm\clang.exe is missing"; exit 1 }
+          $llvm >> $env:GITHUB_PATH
+
+      # The repository's data/net.json is a placeholder (blitzlink.example.com). Official builds swap in the real relay/STUN from
+      # the repository variable BLITZLINK_NET_JSON (the full file, e.g. {"relay":"https://…","stun":["stun:…:3478"]}).
+      # Forks without the variable build with the placeholder, so their sidecar needs --relay (or their own net.json).
+      - name: Network config
+        env:
+          NET_JSON: ${{ vars.BLITZLINK_NET_JSON }}
+        run: |
+          if [ -n "$NET_JSON" ]; then
+            printf '%s\n' "$NET_JSON" > ../data/net.json
+            echo "data/net.json: official network config from BLITZLINK_NET_JSON"
+          else
+            echo "::warning::BLITZLINK_NET_JSON is not set, building with the placeholder data/net.json"
+          fi
+
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: native -> target
+          key: ${{ matrix.target }}
+
+      # Unit tests + relay e2e + tunnel e2e (relay, host, join, 1 MB round trip, direct UDP and --turn-only) on every platform.
+      - name: Test
+        run: cargo test --workspace --locked --target ${{ matrix.target }}
+
+      - name: Build
+        run: cargo build --release --locked -p blitzlink-tunnel --target ${{ matrix.target }}
+
+      - name: Stage
+        run: |
+          mkdir -p "../out/$DIR"
+          cp "target/${{ matrix.target }}/release/$EXE" "../out/$DIR/"
+          "../out/$DIR/$EXE" --version
+
+      # Oldest glibc the Linux binary accepts (it is built against the runner's glibc).
+      - name: glibc floor
+        if: matrix.platform == 'linux'
+        run: objdump -T "../out/$DIR/$EXE" | grep -o 'GLIBC_[0-9.]*' | sort -uV | tail -1
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: natives-${{ matrix.platform }}-${{ matrix.arch }}
+          path: out
+          if-no-files-found: error
+
+  natives:
+    name: natives (all platforms)
+    needs: build
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: natives-*
+          path: natives
+          merge-multiple: true
+
+      - name: SHA256SUMS
+        working-directory: natives
+        run: |
+          find . -type f -name 'blitzlink-tunnel*' | sed 's|^\./||' | sort | xargs sha256sum > SHA256SUMS
+          cat SHA256SUMS
+          test "$(wc -l < SHA256SUMS)" -eq 4
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: natives
+          path: natives
+          if-no-files-found: error

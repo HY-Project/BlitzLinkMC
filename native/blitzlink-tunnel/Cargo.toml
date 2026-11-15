@@ -1,0 +1,32 @@
+[package]
+name = "blitzlink-tunnel"
+description = "BlitzLink — sidecar that tunnels Minecraft TCP over WebRTC DataChannels (host / join, Full ICE, host-embedded TURN)"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "blitzlink-tunnel"
+path = "src/main.rs"
+
+[dependencies]
+blitzlink-core = { path = "../blitzlink-core" }
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = { version = "=1.0.154", features = ["preserve_order"] }
+tokio = { version = "=1.54.1", features = ["rt-multi-thread", "macros", "net", "time", "sync", "io-std", "io-util", "signal"] }
+# 공식 중계에 바깥으로 붙기(wss — rustls, 인증서는 webpki 뿌리).
+tokio-tungstenite = { version = "=0.30.0", default-features = false, features = ["handshake", "connect", "rustls-tls-webpki-roots"] }
+futures-util = { version = "=0.3.34", default-features = false, features = ["sink", "std"] }
+clap = { version = "=4.6.7", features = ["derive"] }
+igd-next = { version = "=0.18.0", features = ["aio_tokio"] }
+# wss의 암호 — aws-lc-rs 하나만(str0m의 dimpl도 같은 것). 기능이 하나라 rustls가 알아서 고른다.
+rustls = { version = "=0.23.45", default-features = false, features = ["aws_lc_rs", "std", "tls12"] }
+# WebRTC DataChannel(Full ICE) — 순수 Rust 암호(rust-crypto)로 Windows·Linux x64·arm64 같은 빌드.
+str0m = { version = "=0.25.0", default-features = false, features = ["rust-crypto"] }
+
+[dev-dependencies]
+blitzlink-relay = { path = "../blitzlink-relay" }
+tokio = { version = "=1.54.1", features = ["process"] }

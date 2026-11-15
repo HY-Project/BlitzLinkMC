@@ -1,0 +1,74 @@
+# BlitzLink jars: ONE mod file for NeoForge + Fabric (build/libs/blitzlink-<version>+mc26.3.jar) and the Bukkit plugin,
+# each carrying the blitzlink-tunnel sidecar for Windows x64/arm64 and Linux x64/arm64 (built by natives.yml on native runners).
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  natives:
+    uses: ./.github/workflows/natives.yml
+
+  jars:
+    name: jars (universal mod + bukkit)
+    needs: natives
+    runs-on: ubuntu-26.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+
+      # Same network config as the sidecars (natives.yml): the jar's blitzlink/net.json must match what they embed.
+      - name: Network config
+        env:
+          NET_JSON: ${{ vars.BLITZLINK_NET_JSON }}
+        run: |
+          if [ -n "$NET_JSON" ]; then
+            printf '%s\n' "$NET_JSON" > data/net.json
+            echo "data/net.json: official network config from BLITZLINK_NET_JSON"
+          else
+            echo "::warning::BLITZLINK_NET_JSON is not set, building with the placeholder data/net.json"
+          fi
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - uses: gradle/actions/setup-gradle@v5
+
+      # Laid out as natives/<platform>/blitzlink-tunnel(.exe) + SHA256SUMS — bundleNatives (build.gradle) reads it as is.
+      - uses: actions/download-artifact@v4
+        with:
+          name: natives
+          path: natives
+
+      - name: Check sidecars
+        run: |
+          cd natives && sha256sum -c SHA256SUMS
+          test -f windows-x64/blitzlink-tunnel.exe && test -f windows-arm64/blitzlink-tunnel.exe
+          test -f linux-x64/blitzlink-tunnel && test -f linux-arm64/blitzlink-tunnel
+
+      # Unit tests + the universal jar + the Bukkit plugin.
+      - name: Build
+        run: ./gradlew build --stacktrace
+
+      - name: Every platform in the jar
+        run: |
+          jar=$(ls build/libs/blitzlink-*+mc*.jar)
+          unzip -p "$jar" natives/index.txt
+          test "$(unzip -p "$jar" natives/index.txt | wc -l)" -eq 4
+          unzip -l "$jar" | grep -E 'META-INF/neoforge.mods.toml|fabric.mod.json|META-INF/LICENSE'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: blitzlink
+          path: |
+            build/libs/blitzlink-*.jar
+            bukkit/build/libs/blitzlink-bukkit-*.jar
+          if-no-files-found: error

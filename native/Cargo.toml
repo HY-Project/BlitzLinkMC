@@ -1,0 +1,24 @@
+# BlitzLink 네이티브 — 마인크래프트 서버를 참가 코드(MCJE-XXXX)로 잇는 Rust 쪽.
+#
+#   blitzlink-core   — 중계 메시지(`relay`), STUN, 서버 신원(Ed25519·지문), TURN codec.
+#   blitzlink-relay  — hyproj.com의 시그널링 중계(SDP 한 쌍 + 공개 목록 + 선택 STUN).
+#   blitzlink-tunnel — 모드가 띄우는 사이드카(host / join). WebRTC DataChannel(str0m, Full ICE) 위로 MC TCP를 터널링한다.
+#
+# 문서: ../docs/en/RELAY.md(흐름·배포 안), ../docs/en/PROTOCOL.md(사이드카 제어 JSON 줄).
+[workspace]
+resolver = "2"
+members = ["blitzlink-core", "blitzlink-relay", "blitzlink-tunnel"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["HY Project"]
+license = "Apache-2.0"
+repository = "https://github.com/HY-Project/BlitzLinkMC"
+publish = false
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true

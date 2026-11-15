@@ -1,0 +1,49 @@
+{
+  "_comment": "Each level lists only the words that level adds. STANDARD includes LIGHT and STRICT includes STANDARD automatically — never repeat a word across levels. Repeated Latin letters collapse before matching (asshole → ashole), so avoid short words whose collapsed form is an ordinary word (ass → as, piss → pis(tol), hell → hel(lo)). Matching rules: native/blitzlink-relay/src/chat_filter.rs.",
+  "lang": "en",
+  "light": [
+    "heil hitler",
+    "sieg heil",
+    "1488",
+    "14 words",
+    "holocaust hoax",
+    "holocaust never happened",
+    "gas the jews",
+    "white power",
+    "nigger",
+    "nigga",
+    "faggot",
+    "kike",
+    "chink",
+    "spic",
+    "tranny"
+  ],
+  "standard": [
+    "fuck",
+    "motherfucker",
+    "shit",
+    "bullshit",
+    "bitch",
+    "cunt",
+    "asshole",
+    "dick",
+    "pussy",
+    "whore",
+    "slut",
+    "retard",
+    "wanker",
+    "twat",
+    "kys",
+    "kill yourself"
+  ],
+  "strict": [
+    "damn",
+    "crap",
+    "bastard",
+    "stfu",
+    "wtf",
+    "douche",
+    "jackass",
+    "bollocks"
+  ]
+}

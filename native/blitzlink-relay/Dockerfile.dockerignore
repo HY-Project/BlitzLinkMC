@@ -1,0 +1,5 @@
+# BlitzLink_26.3 뿌리를 맥락으로 쓰되, 중계 빌드에 드는 것만 보낸다.
+*
+!native
+!data
+native/target
