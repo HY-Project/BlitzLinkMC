@@ -11,12 +11,9 @@
 # then download the `natives` artifact before running Gradle.
 name: natives
 
+# Runs only when build.yml calls it (every push/PR) or by hand. Its own push/pull_request triggers made every push build
+# the sidecars twice at once, and the two runs raced for the same rust-cache keys ("Unable to reserve cache").
 on:
-  push:
-    branches: [main]
-    paths: ["native/**", "data/net.json", ".github/workflows/natives.yml"]
-  pull_request:
-    paths: ["native/**", "data/net.json", ".github/workflows/natives.yml"]
   workflow_dispatch:
   workflow_call:
 
@@ -98,6 +95,8 @@ jobs:
         with:
           workspaces: native -> target
           key: ${{ matrix.target }}
+          # ~460 MB per platform: save from main only, so pull requests restore it but don't fill the 10 GB cache quota.
+          save-if: ${{ github.ref == 'refs/heads/main' }}
 
       # Unit tests + relay e2e + tunnel e2e (relay, host, join, 1 MB round trip, direct UDP and --turn-only) on every platform.
       - name: Test
@@ -117,7 +116,7 @@ jobs:
         if: matrix.platform == 'linux'
         run: objdump -T "../out/$DIR/$EXE" | grep -o 'GLIBC_[0-9.]*' | sort -uV | tail -1
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: natives-${{ matrix.platform }}-${{ matrix.arch }}
           path: out
@@ -128,7 +127,7 @@ jobs:
     needs: build
     runs-on: ubuntu-26.04
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: natives-*
           path: natives
@@ -141,7 +140,7 @@ jobs:
           cat SHA256SUMS
           test "$(wc -l < SHA256SUMS)" -eq 4
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: natives
           path: natives

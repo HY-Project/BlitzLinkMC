@@ -11,6 +11,11 @@ on:
 permissions:
   contents: read
 
+# One build per branch; a newer push to the same pull request cancels the older run.
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   natives:
     uses: ./.github/workflows/natives.yml
@@ -43,7 +48,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v5
 
       # Laid out as natives/<platform>/blitzlink-tunnel(.exe) + SHA256SUMS — bundleNatives (build.gradle) reads it as is.
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: natives
           path: natives
@@ -65,7 +70,7 @@ jobs:
           test "$(unzip -p "$jar" natives/index.txt | wc -l)" -eq 4
           unzip -l "$jar" | grep -E 'META-INF/neoforge.mods.toml|fabric.mod.json|META-INF/LICENSE'
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: blitzlink
           path: |
