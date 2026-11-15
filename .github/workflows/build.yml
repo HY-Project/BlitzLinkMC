@@ -4,7 +4,8 @@ name: build
 
 on:
   push:
-    branches: [main]
+    # One branch per Minecraft version (mc-26.3, ...); the default branch is the latest stable one.
+    branches: ['mc-*']
   pull_request:
   workflow_dispatch:
 

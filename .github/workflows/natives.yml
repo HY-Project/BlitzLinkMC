@@ -95,8 +95,9 @@ jobs:
         with:
           workspaces: native -> target
           key: ${{ matrix.target }}
-          # ~460 MB per platform: save from main only, so pull requests restore it but don't fill the 10 GB cache quota.
-          save-if: ${{ github.ref == 'refs/heads/main' }}
+          # ~460 MB per platform: save from the default branch only, so pull requests and backport branches (mc-*) restore it
+          # but don't fill the 10 GB cache quota.
+          save-if: ${{ github.event_name != 'pull_request' && github.ref_name == github.event.repository.default_branch }}
 
       # Unit tests + relay e2e + tunnel e2e (relay, host, join, 1 MB round trip, direct UDP and --turn-only) on every platform.
       - name: Test
