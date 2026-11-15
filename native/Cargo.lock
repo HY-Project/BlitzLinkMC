@@ -271,7 +271,7 @@ dependencies = [
 
 [[package]]
 name = "blitzlink-core"
-version = "0.1.0"
+version = "26.3.0"
 dependencies = [
  "base64",
  "ed25519-dalek",
@@ -286,7 +286,7 @@ dependencies = [
 
 [[package]]
 name = "blitzlink-relay"
-version = "0.1.0"
+version = "26.3.0"
 dependencies = [
  "aho-corasick",
  "axum",
@@ -304,7 +304,7 @@ dependencies = [
 
 [[package]]
 name = "blitzlink-tunnel"
-version = "0.1.0"
+version = "26.3.0"
 dependencies = [
  "blitzlink-core",
  "blitzlink-relay",

@@ -88,12 +88,12 @@ compose, nginx, firewall) happens only after the user approves.
 
 1. **Image** — the server is ARM, so linux/arm64. The build context is the `BlitzLink_26.3` root (`blitzlink-core` embeds `data/net.json`).
    ```
-   docker buildx build --platform linux/arm64 -f native/blitzlink-relay/Dockerfile -t blitzlink-relay:0.1.0 .
+   docker buildx build --platform linux/arm64 -f native/blitzlink-relay/Dockerfile -t blitzlink-relay:26.3.0 .
    ```
 2. **Compose service** (added to the hyproj.com compose file):
    ```yaml
    blitzlink-relay:
-     image: blitzlink-relay:0.1.0
+     image: blitzlink-relay:26.3.0
      restart: unless-stopped
      command: ["--listen", "0.0.0.0:1947", "--no-stun", "--trust-proxy"]
      expose: ["1947"]          # only nginx reaches it — not exposed publicly (--trust-proxy trusts X-Real-IP)

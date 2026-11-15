@@ -274,7 +274,7 @@ async fn scenario(mode: Mode) {
     }
     let loader = if mode == Mode::Bukkit { "bukkit" } else { "neoforge" };
     host.send(json!({ "t": "listing", "listing": { "name": "E2E", "mcVersion": "26.3", "loader": loader, "loaderVersion": "Paper 26.3-251", "maxPlayers": 10, "modCount": 2 } })).await;
-    let mods = json!({ "mcVersion": "26.3", "loader": loader, "mods": [{ "id": "blitzlink", "version": "0.1.0", "side": "plugin", "required": true }] });
+    let mods = json!({ "mcVersion": "26.3", "loader": loader, "mods": [{ "id": "blitzlink", "version": "26.3.0", "side": "plugin", "required": true }] });
     host.send(json!({ "t": "meta", "info": mods })).await;
     let hosted = host.wait("hosted", Duration::from_secs(15)).await;
     let code = hosted["code"].as_str().unwrap().to_string();

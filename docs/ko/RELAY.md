@@ -75,12 +75,12 @@ hyproj.com 서버는 **바꾸면 곧 배포**이므로 아래는 안이다. 반�
 
 1. **이미지** — 서버가 ARM이라 linux/arm64. 맥락은 `BlitzLink_26.3` 뿌리(`blitzlink-core`가 `data/net.json`을 품는다).
    ```
-   docker buildx build --platform linux/arm64 -f native/blitzlink-relay/Dockerfile -t blitzlink-relay:0.1.0 .
+   docker buildx build --platform linux/arm64 -f native/blitzlink-relay/Dockerfile -t blitzlink-relay:26.3.0 .
    ```
 2. **compose 서비스**(hyproj.com compose에 더한다):
    ```yaml
    blitzlink-relay:
-     image: blitzlink-relay:0.1.0
+     image: blitzlink-relay:26.3.0
      restart: unless-stopped
      command: ["--listen", "0.0.0.0:1947", "--no-stun", "--trust-proxy"]
      expose: ["1947"]          # nginx만 닿는다 — 밖에 열지 않는다(--trust-proxy가 X-Real-IP를 믿으므로)
