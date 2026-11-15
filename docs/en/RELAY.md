@@ -41,7 +41,8 @@ Home-hosted MC servers usually sit behind NAT. The relay only **introduces** the
      optional (`7k3q` → `MCJE-7K3Q`).
    - The host writes the code to `--code-file` and asks for it again next time; the relay also reserves it for that key for **24 hours**.
    - If the same key connects again it takes over the old registration.
-   - The host sends `update{listing, public?}` every 5 s when something changed and pings every 20 s. After 75 s of silence the relay
+   - The host sends `update{listing, public?}` every 5 s when something changed (and at least once a minute) and pings every 20 s.
+     After 75 s of silence (no message and no ping; before 26.3.1 pings did not count) the relay
      drops it. On disconnect it retries with a 2 s → 60 s backoff.
    - `listing` is the MC summary (`name·motd·mcVersion·protocol·loader·loaderVersion·modCount·modsHash·players·maxPlayers·onlineMode`).
      **The mod list itself is not sent to the relay** — it goes over the P2P `meta` channel.
@@ -88,12 +89,12 @@ compose, nginx, firewall) happens only after the user approves.
 
 1. **Image** — the server is ARM, so linux/arm64. The build context is the `BlitzLink_26.3` root (`blitzlink-core` embeds `data/net.json`).
    ```
-   docker buildx build --platform linux/arm64 -f native/blitzlink-relay/Dockerfile -t blitzlink-relay:26.3.0 .
+   docker buildx build --platform linux/arm64 -f native/blitzlink-relay/Dockerfile -t blitzlink-relay:26.3.1 .
    ```
 2. **Compose service** (added to the hyproj.com compose file):
    ```yaml
    blitzlink-relay:
-     image: blitzlink-relay:26.3.0
+     image: blitzlink-relay:26.3.1
      restart: unless-stopped
      command: ["--listen", "0.0.0.0:1947", "--no-stun", "--trust-proxy"]
      expose: ["1947"]          # only nginx reaches it — not exposed publicly (--trust-proxy trusts X-Real-IP)

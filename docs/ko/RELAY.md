@@ -34,7 +34,8 @@
    - 코드: `MCJE-` + 4글자(0·1·O·I·L·U를 뺀 30자 → 81만 가지). 대소문자·공백·하이픈 무시, 머리 생략 가능(`7k3q` → `MCJE-7K3Q`).
    - 호스트는 받은 코드를 `--code-file`에 적어 두었다가 다음에 같은 것을 청하고, 중계도 그 키 몫으로 **하루** 남겨 둔다.
    - 같은 키가 다시 붙으면 옛 접속의 자리를 넘겨받는다.
-   - 호스트는 5초마다 바뀐 것만 `update{listing, public?}`, 20초마다 ping. 75초 동안 말이 없으면 중계가 내린다. 끊기면 2초~60초 백오프로 다시 붙는다.
+   - 호스트는 5초마다 바뀐 것만(그래도 1분에 한 번은) `update{listing, public?}`, 20초마다 ping. 75초 동안 아무것도(글도 ping도)
+     없으면 중계가 내린다(26.3.1 전에는 ping을 세지 않았다). 끊기면 2초~60초 백오프로 다시 붙는다.
    - `listing`은 MC용 요약(`name·motd·mcVersion·protocol·loader·loaderVersion·modCount·modsHash·players·maxPlayers·onlineMode`). **모드 목록 본체는 싣지 않는다** — P2P `meta`로 간다.
 2. **클라 들어오기** — `tunnel join --code MCJE-7K3Q`가 후보를 모아 Offer(채널 `meta`)를 `join{relay, code, sdp}`로 보낸다. 중계는 호스트에
    `offer{session, sdp}`, 호스트의 `answer{session, sdp, turn?}`를 클라에 `answer{sdp, fingerprint, listing, turn?}`으로 건넨다. 8초 안에 답이 없으면
@@ -75,12 +76,12 @@ hyproj.com 서버는 **바꾸면 곧 배포**이므로 아래는 안이다. 반�
 
 1. **이미지** — 서버가 ARM이라 linux/arm64. 맥락은 `BlitzLink_26.3` 뿌리(`blitzlink-core`가 `data/net.json`을 품는다).
    ```
-   docker buildx build --platform linux/arm64 -f native/blitzlink-relay/Dockerfile -t blitzlink-relay:26.3.0 .
+   docker buildx build --platform linux/arm64 -f native/blitzlink-relay/Dockerfile -t blitzlink-relay:26.3.1 .
    ```
 2. **compose 서비스**(hyproj.com compose에 더한다):
    ```yaml
    blitzlink-relay:
-     image: blitzlink-relay:26.3.0
+     image: blitzlink-relay:26.3.1
      restart: unless-stopped
      command: ["--listen", "0.0.0.0:1947", "--no-stun", "--trust-proxy"]
      expose: ["1947"]          # nginx만 닿는다 — 밖에 열지 않는다(--trust-proxy가 X-Real-IP를 믿으므로)

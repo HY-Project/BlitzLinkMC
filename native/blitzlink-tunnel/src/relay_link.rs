@@ -14,6 +14,9 @@ use tokio_tungstenite::tungstenite::Message;
 
 use crate::control::{emit, log};
 
+/// 목록이 그대로여도 이만큼마다 `update`를 보낸다(중계의 75초 무응답 끊김보다 넉넉히 짧게).
+const KEEPALIVE: Duration = Duration::from_secs(60);
+
 /// 중계가 건넨 Offer 하나 — 답(SDP와 내장 TURN) 또는 거절 까닭.
 pub struct OfferReq {
     pub sdp: String,
@@ -151,6 +154,9 @@ async fn session(
 
     let (answers_tx, mut answers) = mpsc::channel::<ToRelay>(32);
     let mut refresh = tokio::time::interval(Duration::from_secs(5));
+    // 마지막으로 글(update)을 보낸 때 — 26.3.0까지의 중계는 75초 동안 글이 없으면 호스트를 끊으므로(ping은 세지 않았다),
+    // 조용한 서버도 1분마다 같은 목록을 다시 보낸다.
+    let mut last_text = tokio::time::Instant::now();
     let mut ping = tokio::time::interval(Duration::from_secs(20));
     loop {
         tokio::select! {
@@ -193,7 +199,8 @@ async fn session(
                 }
                 let l = current(listing);
                 let p = *public.borrow();
-                if l != sent || p != sent_public {
+                if l != sent || p != sent_public || last_text.elapsed() >= KEEPALIVE {
+                    last_text = tokio::time::Instant::now();
                     let public_change = (p != sent_public).then_some(p);
                     sent = l.clone();
                     sent_public = p;

@@ -58,6 +58,8 @@ pub struct Config {
     pub answer_timeout: Duration,
     /// 호스트가 끊긴 뒤 그 참가 코드를 그 호스트 몫으로 남겨 두는 시간.
     pub code_reserve: Duration,
+    /// 등록한 호스트가 이만큼 아무것도(글·ping) 보내지 않으면 끊는다.
+    pub host_idle: Duration,
 }
 
 impl Default for Config {
@@ -71,6 +73,7 @@ impl Default for Config {
             max_hosts_per_ip: 8,
             answer_timeout: Duration::from_secs(8),
             code_reserve: Duration::from_secs(24 * 3600),
+            host_idle: HOST_IDLE,
         }
     }
 }
@@ -337,13 +340,19 @@ async fn send(ws: &mut WebSocket, m: &FromRelay) -> bool {
     ws.send(Message::Text(m.to_json().into())).await.is_ok()
 }
 
-async fn recv(ws: &mut WebSocket, within: Duration) -> Option<Result<ToRelay, RelayError>> {
-    let until = tokio::time::Instant::now() + within;
+/// 다음 글 메시지. `within` 안에 아무것도 없으면 None. `pings_count`면 ping·pong도 살아 있다는 표시로 보아 기한을 늘린다
+/// (등록한 호스트 — 사이드카는 20초마다 ping만 보내고, 목록이 바뀌지 않으면 글은 보내지 않는다).
+async fn recv(ws: &mut WebSocket, within: Duration, pings_count: bool) -> Option<Result<ToRelay, RelayError>> {
+    let mut until = tokio::time::Instant::now() + within;
     loop {
         let msg = tokio::time::timeout_at(until, ws.next()).await.ok()??.ok()?;
         match msg {
             Message::Text(t) => return Some(ToRelay::from_json(t.as_str()).map_err(|_| RelayError::BadMessage)),
-            Message::Ping(_) | Message::Pong(_) => continue,
+            Message::Ping(_) | Message::Pong(_) => {
+                if pings_count {
+                    until = tokio::time::Instant::now() + within;
+                }
+            }
             _ => return None,
         }
     }
@@ -354,7 +363,7 @@ async fn session(mut ws: WebSocket, relay: Arc<Relay>, ip: IpAddr) {
     if !send(&mut ws, &FromRelay::Hello { relay: RELAY_PROTOCOL, nonce }).await {
         return;
     }
-    let first = match recv(&mut ws, FIRST_MESSAGE).await {
+    let first = match recv(&mut ws, FIRST_MESSAGE, false).await {
         Some(Ok(m)) => m,
         Some(Err(e)) => {
             send(&mut ws, &FromRelay::Error { reason: e }).await;
@@ -417,7 +426,7 @@ async fn host_session(
                 let Some(out) = out else { break };
                 if !send(&mut ws, &out).await { break; }
             }
-            got = recv(&mut ws, HOST_IDLE) => {
+            got = recv(&mut ws, relay.cfg.host_idle, true) => {
                 match got {
                     Some(Ok(ToRelay::Update { listing, public })) => {
                         if let Some(h) = relay.lock().hosts.get_mut(&code).filter(|h| h.conn == conn) {

@@ -196,6 +196,32 @@ async fn host_refusal_and_timeout_reach_the_joiner() {
     assert_eq!(joining.await.unwrap(), FromRelay::Error { reason: RelayError::HostTimeout });
 }
 
+/// 목록이 그대로인 호스트는 ping만 보낸다 — 그것도 살아 있다는 표시다(26.3.0까지는 75초마다 끊었다). 아무것도 보내지 않으면 끊는다.
+#[tokio::test]
+async fn pings_keep_a_quiet_host_registered() {
+    let r = blitzlink_relay::start(RelayConfig {
+        listen: "127.0.0.1:0".parse().unwrap(),
+        stun: None,
+        answer_timeout: Duration::from_millis(500),
+        host_idle: Duration::from_millis(800),
+        ..RelayConfig::default()
+    })
+    .await
+    .unwrap();
+    let (mut hws, code, _) = host(&r, &Identity::ephemeral(), Listing::default(), false, None).await.unwrap();
+    // 3초(기한의 네 배 가까이) 동안 ping만.
+    for _ in 0..10 {
+        tokio::time::sleep(Duration::from_millis(300)).await;
+        hws.send(Message::Ping(Vec::new().into())).await.unwrap();
+    }
+    let joining = tokio::spawn(join(r.http, code.clone(), "v=0".into()));
+    assert!(matches!(next_msg(&mut hws).await, FromRelay::Offer { .. }), "ping만 보낸 호스트도 살아 있다");
+    assert_eq!(joining.await.unwrap(), FromRelay::Error { reason: RelayError::HostTimeout });
+    // 이제 아무것도 보내지 않는다 — 기한이 지나면 내려간다.
+    tokio::time::sleep(Duration::from_millis(1500)).await;
+    assert_eq!(join(r.http, code, "v=0".into()).await, FromRelay::Error { reason: RelayError::NoSuchCode });
+}
+
 #[tokio::test]
 async fn code_survives_reconnect_and_bad_signature_is_refused() {
     let r = relay().await;
