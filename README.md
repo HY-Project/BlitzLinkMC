@@ -1,3 +1,10 @@
+<p align="center"><img src="branding/blitzlink-banner-4x.png" alt="BlitzLink" width="668"></p>
+<p align="center">
+  <img src="branding/badge-neoforge-2x.png" alt="Available for NeoForge" width="168">
+  <img src="branding/badge-fabric-2x.png" alt="Available for Fabric" width="168">
+  <img src="branding/badge-bukkit-2x.png" alt="Available for Bukkit" width="168">
+</p>
+
 # BlitzLink (26.3)
 
 [한국어](README.ko.md)

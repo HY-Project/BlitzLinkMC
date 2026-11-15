@@ -1,7 +1,9 @@
 # Store listing sheet: Modrinth and CurseForge
 
 The fields to fill in when publishing. The project description body is [STORE_DESCRIPTION.md](STORE_DESCRIPTION.md); paste it as-is.
-It uses plain Markdown only (headings, lists, bold, links; no HTML and no tables), so it renders the same on both sites.
+It uses plain Markdown only (headings, lists, bold, links, images; no HTML and no tables), so it renders the same on both sites.
+The banner and loader badges at the top are linked from `branding/` on the `mc-26.3` branch through raw.githubusercontent.com,
+so push `branding/` before pasting. If a site will not show an external image, upload the PNG there and swap the URL.
 한국어: [../ko/STORE_LISTING.md](../ko/STORE_LISTING.md)
 
 ## Common
@@ -17,7 +19,8 @@ It uses plain Markdown only (headings, lists, bold, links; no HTML and no tables
 | Source | https://github.com/HY-Project/BlitzLinkMC |
 | Issues | https://github.com/HY-Project/BlitzLinkMC/issues |
 | Website | https://hyproj.com |
-| Icon | `common/src/main/resources/assets/blitzlink/icon.png` |
+| Icon | `branding/blitzlink-icon-512.png` (same artwork as the in-game `assets/blitzlink/icon.png`) |
+| Banner | `branding/blitzlink-banner-4x.png` (Modrinth: also add it to the gallery as the featured image) |
 
 ## Modrinth
 

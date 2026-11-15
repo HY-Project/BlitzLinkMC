@@ -1,8 +1,10 @@
 # 스토어 등록 시트 — Modrinth · CurseForge
 
-올릴 때 채울 칸. 프로젝트 본문은 [STORE_DESCRIPTION.md](STORE_DESCRIPTION.md)를 그대로 붙여 넣는다. 제목·목록·굵게·링크만 쓴
+올릴 때 채울 칸. 프로젝트 본문은 [STORE_DESCRIPTION.md](STORE_DESCRIPTION.md)를 그대로 붙여 넣는다. 제목·목록·굵게·링크·이미지만 쓴
 평범한 Markdown이라(HTML·표 없음) 두 사이트에서 똑같이 보인다. 두 사이트 모두 영어 본문이 기본이니 공식 본문은
 [../en/STORE_DESCRIPTION.md](../en/STORE_DESCRIPTION.md), 한국어판은 한국 커뮤니티·추가 설명용이다.
+맨 위 배너와 로더 배지는 `mc-26.3` 브랜치의 `branding/`을 raw.githubusercontent.com 주소로 불러오므로, 붙여 넣기 전에 `branding/`을
+푸시해 둔다. 사이트가 외부 이미지를 막으면 그 사이트에 PNG를 직접 올리고 주소만 바꾼다.
 English: [../en/STORE_LISTING.md](../en/STORE_LISTING.md)
 
 ## 공통
@@ -19,7 +21,8 @@ English: [../en/STORE_LISTING.md](../en/STORE_LISTING.md)
 | 소스 | https://github.com/HY-Project/BlitzLinkMC |
 | 이슈 | https://github.com/HY-Project/BlitzLinkMC/issues |
 | 웹사이트 | https://hyproj.com |
-| 아이콘 | `common/src/main/resources/assets/blitzlink/icon.png` |
+| 아이콘 | `branding/blitzlink-icon-512.png`(게임 안 `assets/blitzlink/icon.png`와 같은 그림) |
+| 배너 | `branding/blitzlink-banner-4x.png`(Modrinth는 갤러리에도 올려 대표 이미지로 지정) |
 
 ## Modrinth
 

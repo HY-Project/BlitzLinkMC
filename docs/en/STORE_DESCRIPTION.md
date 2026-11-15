@@ -1,4 +1,6 @@
-# BlitzLink
+![BlitzLink](https://raw.githubusercontent.com/HY-Project/BlitzLinkMC/mc-26.3/branding/blitzlink-banner-4x.png)
+
+![Available for NeoForge](https://raw.githubusercontent.com/HY-Project/BlitzLinkMC/mc-26.3/branding/badge-neoforge-2x.png) ![Available for Fabric](https://raw.githubusercontent.com/HY-Project/BlitzLinkMC/mc-26.3/branding/badge-fabric-2x.png) ![Available for Bukkit](https://raw.githubusercontent.com/HY-Project/BlitzLinkMC/mc-26.3/branding/badge-bukkit-2x.png)
 
 **Join any server with one code. No IP addresses, and usually no port forwarding.**
 

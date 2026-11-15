@@ -1,4 +1,6 @@
-# BlitzLink
+![BlitzLink](https://raw.githubusercontent.com/HY-Project/BlitzLinkMC/mc-26.3/branding/blitzlink-banner-4x.png)
+
+![Available for NeoForge](https://raw.githubusercontent.com/HY-Project/BlitzLinkMC/mc-26.3/branding/badge-neoforge-2x.png) ![Available for Fabric](https://raw.githubusercontent.com/HY-Project/BlitzLinkMC/mc-26.3/branding/badge-fabric-2x.png) ![Available for Bukkit](https://raw.githubusercontent.com/HY-Project/BlitzLinkMC/mc-26.3/branding/badge-bukkit-2x.png)
 
 **코드 하나로 서버에 들어간다. IP 주소도, 대개는 포트포워딩도 필요 없다.**
 
