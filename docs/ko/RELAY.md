@@ -10,7 +10,7 @@
 ```
 [MC 클라] ─TCP→ 127.0.0.1:임의 ─ [tunnel join] ══ WebRTC DataChannel(직접, UDP) ══ [tunnel host] ─TCP→ 127.0.0.1:MC포트 ─ [MC 서버]
                                        │  └─ (UDP 막힘) TURN-over-TCP → 호스트 MC 포트(모드의 첫 바이트 분기) ┘
-                                       └──wss── [blitzlink-relay @hyproj.com/relay/mcje] ──wss── ┘   (SDP만 · 공개 목록 · STUN은 :3478 공유)
+                                       └──wss── [blitzlink-relay @hyproj.com/relay/mcje] ──wss── ┘   (SDP만 · 공개 목록 · STUN :3478)
 ```
 
 - **마크 데이터는 중계를 거치지 않는다.** 중계는 SDP 한 쌍을 건네고 클라 소켓을 닫는다. hyproj의 부하는 시그널링 몇 KB뿐이다.
@@ -18,14 +18,14 @@
   싣는다. 양쪽이 서로에게 연결 확인을 보내 NAT에 구멍이 뚫린다(홀펀칭). 호스트의 UDP 포트는 MC 포트와 같은 번호(안 되면 임의), `--upnp`면 공유기에도 연다.
 - UDP가 막힌 클라는 호스트의 **내장 TURN**(MC TCP 포트, 모드가 첫 바이트로 갈라 사이드카에 넘긴다 — Bukkit은 `--turn-listen`으로 공개 포트에 바로 묶는다)으로 들어온다. 호스트가 답에 자격을 실어 보내고
   중계는 다듬어(`TurnInfo::sanitized`) 건넬 뿐이다. **hyproj에는 TURN이 없다.**
-- STUN은 hyproj.com에서 이미 도는 `hyproj.com:3478`을 같이 쓴다(공식 `data/net.json` — 아래). 이 중계도 `--stun`으로 STUN을 열 수 있지만 hyproj에서는 끈다.
+- STUN은 이 중계가 `hyproj.com:3478`에서 직접 연다(`--stun`, 공식 `data/net.json` — 아래).
 
 | 길 | 하는 일 |
 |---|---|
 | `GET /ws` | WebSocket. 붙으면 중계가 `hello{relay, nonce}`를 먼저 보낸다. 호스트는 `host`, 클라는 `join`. |
 | `GET /servers` | 공개 목록(`ServerList` JSON) — 공개로 연 서버만, 인원 많은 순, 최대 500. 이름·MOTD는 STRICT 검열. `Cache-Control: max-age=5`. |
 | `GET /health` | `ok` |
-| UDP 3478(선택) | STUN Binding(RFC 5389) — `blitzlink_core::stun`. hyproj에서는 끈다(`--no-stun`). |
+| UDP 3478(선택) | STUN Binding(RFC 5389) — `blitzlink_core::stun`. hyproj에서는 켠다(`--stun 0.0.0.0:3478`). `--no-stun`이면 끈다. |
 
 ## 흐름
 
@@ -83,11 +83,11 @@ hyproj.com 서버는 **바꾸면 곧 배포**이므로 아래는 안이다. 반�
    blitzlink-relay:
      image: blitzlink-relay:26.3.1
      restart: unless-stopped
-     command: ["--listen", "0.0.0.0:1947", "--no-stun", "--trust-proxy"]
+     command: ["--listen", "0.0.0.0:1947", "--stun", "0.0.0.0:3478", "--trust-proxy"]
      expose: ["1947"]          # nginx만 닿는다 — 밖에 열지 않는다(--trust-proxy가 X-Real-IP를 믿으므로)
+     ports: ["3478:3478/udp"]  # 밖으로 여는 것은 STUN뿐
    ```
-   STUN은 이미 떠 있는 UDP 3478 STUN을 같이 쓰므로 포트를 더 열지 않는다. 따로 두고 싶으면 `--stun 0.0.0.0:3479` +
-   `ports: ["3479:3479/udp"]` + `BLITZLINK_NET_JSON`의 `stun`을 `stun:hyproj.com:3479`로.
+   다른 서비스가 이미 UDP 3478을 쥐고 있으면 `--no-stun`으로 끄고 `BLITZLINK_NET_JSON`의 `stun`을 그쪽으로 둔다.
 3. **nginx**(같은 server 블록):
    ```nginx
    location /relay/mcje/ {
@@ -99,7 +99,7 @@ hyproj.com 서버는 **바꾸면 곧 배포**이므로 아래는 안이다. 반�
        proxy_read_timeout 120s;   # 호스트는 20초마다 ping
    }
    ```
-4. **방화벽** — 새로 열 것 없음(TCP는 nginx 443, STUN 3478/udp는 이미 열려 있다).
+4. **방화벽** — STUN 3478/udp를 연다(OCI 보안 목록·호스트 iptables). TCP는 nginx 443.
 5. **확인** — `curl https://hyproj.com/relay/mcje/health` → `ok`, `curl https://hyproj.com/relay/mcje/servers` → `{"relay":1,"servers":[…]}`,
    전용 서버 콘솔에 「참가 코드 MCJE-…」, 다른 PC에서 그 코드로 참가.
 

@@ -18,7 +18,7 @@ struct Cli {
     /// STUN(UDP) 주소.
     #[arg(long, default_value = "0.0.0.0:3478")]
     stun: SocketAddr,
-    /// STUN을 열지 않는다(hyproj.com에서는 이미 도는 3478을 같이 쓴다).
+    /// STUN을 열지 않는다(다른 서비스가 이미 UDP 3478을 쥐고 있을 때).
     #[arg(long)]
     no_stun: bool,
     /// 브라우저가 /ws를 열 수 있는 출처(여러 번 — 주면 기본 목록을 바꾼다. `*`는 포트 자리). `any`면 막지 않는다.

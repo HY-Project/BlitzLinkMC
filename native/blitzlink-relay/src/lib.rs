@@ -5,7 +5,7 @@
 //!    메시지 모양의 정본은 `blitzlink_core::relay`.
 //!  - `GET /servers`  공개 목록(JSON `ServerList`) — `--public`으로 연 서버만.
 //!  - `GET /health`   `ok`
-//!  - UDP 3478        STUN Binding(선택 — hyproj.com에서는 이미 도는 3478을 같이 쓰므로 `--no-stun`).
+//!  - UDP 3478        STUN Binding(선택 — `--no-stun`이면 끈다. hyproj.com에서는 켠다).
 //!
 //! 막는 것: 메시지 크기(16 KB), IP마다 접속 빈도(토큰 통), IP마다 올릴 수 있는 서버 수, 전체 서버 수, 호스트의 서명(Ed25519),
 //! 공개 목록 글의 검열(STRICT), 브라우저의 출처(`Origin` — 네이티브 사이드카는 보내지 않아 늘 통과). 배포는 `docs/en/RELAY.md`.

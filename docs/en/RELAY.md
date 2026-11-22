@@ -11,7 +11,7 @@ Home-hosted MC servers usually sit behind NAT. The relay only **introduces** the
 ```
 [MC client] ─TCP→ 127.0.0.1:any ─ [tunnel join] ══ WebRTC DataChannel (direct, UDP) ══ [tunnel host] ─TCP→ 127.0.0.1:mcPort ─ [MC server]
                                        │  └─ (UDP blocked) TURN over TCP → host MC port (mod's first-byte split) ┘
-                                       └──wss── [blitzlink-relay @hyproj.com/relay/mcje] ──wss── ┘   (SDP only · public list · STUN shared on :3478)
+                                       └──wss── [blitzlink-relay @hyproj.com/relay/mcje] ──wss── ┘   (SDP only · public list · STUN on :3478)
 ```
 
 - **Minecraft data never passes through the relay.** The relay hands over one SDP pair and closes the client socket; hyproj only sees a few
@@ -22,15 +22,14 @@ Home-hosted MC servers usually sit behind NAT. The relay only **introduces** the
 - Clients whose UDP is blocked use the host's **embedded TURN** (on the MC TCP port; the mod splits by first byte and hands it to the
   sidecar; Bukkit hosts bind it directly on a public port with `--turn-listen`). The host puts credentials in its answer; the relay only
   sanitizes them (`TurnInfo::sanitized`). **There is no TURN on hyproj.**
-- STUN uses the existing STUN service at `hyproj.com:3478` (official `data/net.json`, see below). This relay can serve STUN itself (`--stun`) but it is
-  off on hyproj.
+- STUN is served by this relay itself at `hyproj.com:3478` (`--stun`, official `data/net.json`, see below).
 
 | Route | Purpose |
 |---|---|
 | `GET /ws` | WebSocket. The relay sends `hello{relay, nonce}` first. Hosts send `host`, clients send `join`. |
 | `GET /servers` | Public list (`ServerList` JSON) — public hosts only, most players first, max 500. Names and MOTDs are censored at STRICT. `Cache-Control: max-age=5`. |
 | `GET /health` | `ok` |
-| UDP 3478 (optional) | STUN Binding (RFC 5389) — `blitzlink_core::stun`. Off on hyproj (`--no-stun`). |
+| UDP 3478 (optional) | STUN Binding (RFC 5389) — `blitzlink_core::stun`. On at hyproj (`--stun 0.0.0.0:3478`); `--no-stun` turns it off. |
 
 ## Flow
 
@@ -96,11 +95,11 @@ compose, nginx, firewall) happens only after the user approves.
    blitzlink-relay:
      image: blitzlink-relay:26.3.1
      restart: unless-stopped
-     command: ["--listen", "0.0.0.0:1947", "--no-stun", "--trust-proxy"]
+     command: ["--listen", "0.0.0.0:1947", "--stun", "0.0.0.0:3478", "--trust-proxy"]
      expose: ["1947"]          # only nginx reaches it — not exposed publicly (--trust-proxy trusts X-Real-IP)
+     ports: ["3478:3478/udp"]  # STUN is the only port opened to the outside
    ```
-   STUN reuses the STUN service already running on UDP 3478, so no new port is opened. To run a separate one: `--stun 0.0.0.0:3479` +
-   `ports: ["3479:3479/udp"]` + change `stun` in `BLITZLINK_NET_JSON` to `stun:hyproj.com:3479`.
+   If another service already holds UDP 3478, use `--no-stun` and point `stun` in `BLITZLINK_NET_JSON` at that service instead.
 3. **nginx** (same server block):
    ```nginx
    location /relay/mcje/ {
@@ -112,7 +111,7 @@ compose, nginx, firewall) happens only after the user approves.
        proxy_read_timeout 120s;   # hosts ping every 20 s
    }
    ```
-4. **Firewall** — nothing new (TCP goes through nginx on 443; STUN 3478/udp is already open).
+4. **Firewall** — open STUN 3478/udp (OCI security list and host iptables); TCP goes through nginx on 443.
 5. **Check** — `curl https://hyproj.com/relay/mcje/health` → `ok`, `curl https://hyproj.com/relay/mcje/servers` → `{"relay":1,"servers":[…]}`,
    a `MCJE-…` join code on a dedicated server console, and joining with that code from another PC.
 
